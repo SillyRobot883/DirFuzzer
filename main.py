@@ -1,5 +1,5 @@
-import requests
 import argparse
+import requests
 from termcolor import colored
 from pyfiglet import Figlet
 from enum4dir import dirEnum
@@ -11,39 +11,39 @@ print(custom_fig.renderText("dirEnumeration"))
 print(colored('\n[*] Web Directory Enumeration\n', 'cyan'))
 print(colored('[*] Works on HTTP protocol only\n', 'cyan'))
 
-def validate_url(url):
-    if not url.startswith("http://"):
-        url = "http://" + url
+parser = argparse.ArgumentParser(description="Web directory enumerator")
+parser.add_argument("-u", "--url", required=True, help="Target URL (without http://)")
+parser.add_argument("-w", "--wordlist", required=True, help="Wordlist file")
+parser.add_argument("-o", "--output", required=False, help="Output file to save results")
+parser.add_argument("-t", "--threads", required=False, type=int, default=10, help="Number of threads (default 10)")
 
-    if not v.url(url):
-        raise ValueError("Invalid URL format")
+args = parser.parse_args()
 
-    try:
-        res = requests.get(url, timeout=5)
-        if res.status_code == 200:
-            print("\nURL:", colored(url, "green"))
-            print(colored("[+] Connected successfully!\n", "green"))
-            return url
-        else:
-            raise ValueError(f"Website responded with status: {res.status_code}")
-    except Exception as e:
-        raise ValueError(f"Couldn't connect to the URL: {e}")
+network = args.url
+if network[-1] != "/":
+    network += ("/")
+if not network.startswith("http://"):
+    network = "http://" + network
 
-def main():
-    parser = argparse.ArgumentParser(description="Directory Enumeration Tool")
-    parser.add_argument('-u', '--url', type=str, required=True, help="Target URL (http://example.com)")
-    parser.add_argument('-w', '--wordlist', type=str, default="common.txt", help="Path to wordlist")
-    parser.add_argument('-o', '--output', type=str, help="Save results to a file")
+# URL validation
+try:
+    if v.url(network):
+        try:
+            res = requests.get(network)
+            if res.status_code == 200:
+                print("URL: ", colored(network, "green") + "\n")
+                print(colored("Connected successfully!\n", "green"))
+            else:
+                print(colored("Could not connect to URL. Exiting...", "red"))
+                exit(1)
+        except Exception:
+            print("Make sure the website uses", colored("HTTP", 'red'), "protocol")
+            exit(1)
+    else:
+        print(colored("Invalid URL. Exiting...", "red"))
+        exit(1)
+except KeyboardInterrupt:
+    print(colored("\n[*] Exiting program...\n", 'red'))
+    exit(1)
 
-    args = parser.parse_args()
-
-    try:
-        network = validate_url(args.url)
-        dirEnum(network, wordlist=args.wordlist, output_file=args.output)
-    except KeyboardInterrupt:
-        print(colored("\n[*] Exiting program...\n", 'red'))
-    except Exception as e:
-        print(colored(f"\nError: {e}", 'red'))
-
-if __name__ == "__main__":
-    main()
+dirEnum(network, args.wordlist, args.output, args.threads)
