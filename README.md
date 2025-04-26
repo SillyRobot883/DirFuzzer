@@ -13,7 +13,7 @@
     
  - install packages:
     ```bash
-   pip install -r requirements
+   pip install -r requirements.txt
     ```
  - run the tool:
    ```bash
