@@ -57,7 +57,7 @@ def dirEnum(network, wordlist, output_file, threads):
         stop_threads = True
         executor.shutdown(wait=False)
 
-    signal.signal(signal.SIGINT, signal_handler)  
+    signal.signal(signal.SIGINT, signal_handler)
     try:
         with ThreadPoolExecutor(max_workers=threads) as executor:
             futures = [executor.submit(scan_dir, network, dir) for dir in payloads]
@@ -80,8 +80,9 @@ def dirEnum(network, wordlist, output_file, threads):
         if output_file:
             with open(output_file, "w") as f:
                 for dir in open_dir:
-                    f.write(f"{dir}\n")
+                    f.write(f"/{dir.split(' ')[0]}\n")
 
             console.log(f"[bold green]Results saved to {output_file}")
 
         sys.exit(0)
+
