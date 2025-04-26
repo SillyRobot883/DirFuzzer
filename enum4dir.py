@@ -2,14 +2,17 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from rich.console import Console
 import threading
+import sys
+import signal
 
 console = Console()
 
 # THREADING
 open_dir = []
 open_count = 0
-lock = threading.Lock()  
+lock = threading.Lock()
 
+stop_threads = False
 
 def load_payloads(wordlist):
     try:
@@ -20,9 +23,11 @@ def load_payloads(wordlist):
         console.log("[bold red]The payload file wasn't found. Please try again.")
         exit(1)
 
-
 def scan_dir(network, dir):
-    global open_count
+    global open_count, stop_threads
+
+    if stop_threads:
+        return
 
     try:
         url_mod = network + dir
@@ -39,24 +44,33 @@ def scan_dir(network, dir):
     except requests.RequestException:
         console.log(f"[bold yellow]Failed to connect: {network + dir}")
 
-
 def dirEnum(network, wordlist, output_file, threads):
-    global open_dir, open_count
+    global open_dir, open_count, stop_threads
 
     payloads = load_payloads(wordlist)
 
     console.log(f"[bold cyan]Starting enumeration with {threads} threads...")
 
+    def signal_handler(sig, frame):
+        global stop_threads
+        console.log("\n[bold red]CTRL+C detected. Stopping enumeration...")
+        stop_threads = True
+        executor.shutdown(wait=False)
+
+    signal.signal(signal.SIGINT, signal_handler)  
     try:
         with ThreadPoolExecutor(max_workers=threads) as executor:
             futures = [executor.submit(scan_dir, network, dir) for dir in payloads]
 
-            for _ in as_completed(futures):
-                pass  # we just want to wait for all to complete
+            for future in as_completed(futures):
+                if stop_threads:
+                    break
+
     except KeyboardInterrupt:
-        console.log("\n[bold red]CTRL+C detected. Printing results...")
+        pass
 
     finally:
+        # Print results and save them
         console.log("\n[bold yellow]Results:")
         console.log(f"[bold yellow]Directories found: {open_count}")
 
@@ -70,5 +84,4 @@ def dirEnum(network, wordlist, output_file, threads):
 
             console.log(f"[bold green]Results saved to {output_file}")
 
-        exit()
-
+        sys.exit(0)
