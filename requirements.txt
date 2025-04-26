@@ -1,0 +1,5 @@
+requests
+rich
+termcolor
+pyfiglet
+validators
