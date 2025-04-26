@@ -2,15 +2,22 @@
 
 ## Web Directory Enumeration :
 
-#### Overview : This program helps you enumerate web directories. Using wordlists, the program will enumerate for every directory given in that list.. 
+#### Overview : Automated web directory enumeration using wordlists. Helps quickly find hidden directories on a website.
 
-#### By using the app you will be able to :
-- Fastly find hidden directories rather than manual trial and error
   
-
 #### Usage :
- - type in the URL
- - type in the wordlist (not implemented yet)
- - choose Verbose mode status
+ - install the tool:
+    ```bash
+   git clone https://github.com/SillyRobot883/DirFuzzer.git
+    ```
+    
+ - install packages:
+    ```bash
+   pip install -r requirements
+    ```
+ - run the tool:
+   ```bash
+    python main.py -u <URL> -w <wordlist.txt> -o <results.txt> -t <threads>
+   ```
  
  
